@@ -71,7 +71,11 @@ namespace PriseBot
             var host = builder.Build();
             using (host)
             {
-                await host.RunAsync();
+                try
+                {
+                    await host.RunAsync();
+                }
+                catch {}
             }
         }
     }
