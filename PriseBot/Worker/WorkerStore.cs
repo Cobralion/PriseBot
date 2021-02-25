@@ -31,6 +31,8 @@ namespace PriseBot.Worker
             var name = $"{workerInformation.Guild}#{typeof(T)}";
             var t = new T();
 
+            if (_workers.ContainsKey(name)) return;
+
             if (t is ChargeWorker)
             {
                 var (Minimum, Maximum) = await _database.GetGuildSettings(workerInformation.Guild);
