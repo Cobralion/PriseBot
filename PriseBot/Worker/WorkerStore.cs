@@ -31,8 +31,6 @@ namespace PriseBot.Worker
             var name = $"{workerInformation.Guild}#{typeof(T)}";
             var t = new T();
 
-            if (_workers.ContainsKey(name)) return;
-
             if (t is ChargeWorker)
             {
                 var (Minimum, Maximum) = await _database.GetGuildSettings(workerInformation.Guild);
@@ -42,7 +40,11 @@ namespace PriseBot.Worker
                 t.Configure(workerInformation with { Time = minMax, LavaNode = _lavaNode, Database = _database });
             }
 
-            if (_workers.ContainsKey(name)) _workers[name].Dispose();
+            if (_workers.ContainsKey(name))
+            {
+                _workers[name].Dispose();
+                _workers.Remove(name);
+            }
             _workers.Add(name, t);
 
             t.Start();

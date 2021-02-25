@@ -106,6 +106,7 @@ namespace PriseBot.Worker
         {
             if (_lavaNode.HasPlayer(_context.Guild)) return;
 
+            //TODO: FIX BUG join to the channel with the most users
             var voiceState = _context.User as IVoiceState;
             if (voiceState?.VoiceChannel == null) return;
 
