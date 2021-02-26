@@ -107,12 +107,19 @@ namespace PriseBot.Worker
             if (_lavaNode.HasPlayer(_context.Guild)) return;
 
             //TODO: FIX BUG join to the channel with the most users
-            var voiceState = _context.User as IVoiceState;
-            if (voiceState?.VoiceChannel == null) return;
+            //OLD
+            //var voiceState = _context.User as IVoiceState;
+            //if (voiceState?.VoiceChannel == null) return;
+
+            //TEST THIS
+
+            var channel = _context.Guild.Channels.OrderBy(i => i.Users.Count).FirstOrDefault() as IVoiceChannel;
+
+            if (channel == null) return;
 
             try
             {
-                await _lavaNode.JoinAsync(voiceState.VoiceChannel, _context.Channel as ITextChannel);
+                await _lavaNode.JoinAsync(channel, _context.Channel as ITextChannel);
             }
             catch (Exception exception)
             {

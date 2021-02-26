@@ -38,5 +38,12 @@ namespace PriseBot.Modules
             _logger.LogInformation($"Command stop was executed by {Context.User}");
             await _workerStore.RemoveAndStop<ChargeWorker>(Context.Guild.Id.ToString());
         }
+
+        [Command("aufladen")]
+        public async Task ChargeOneTimeAsync()
+        {
+            _logger.LogInformation($"Command aufladen was executed by {Context.User}");
+
+        }
     }
 }

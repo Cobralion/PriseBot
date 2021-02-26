@@ -35,6 +35,8 @@ namespace PriseBot.Worker
             {
                 var (Minimum, Maximum) = await _database.GetGuildSettings(workerInformation.Guild);
 
+                _logger.LogDebug($"Started worker with time arguments: Minimum: {Minimum}, Maximum: {Maximum}");
+
                 var minMax = new MinMaxTime(Minimum, Maximum);
 
                 t.Configure(workerInformation with { Time = minMax, LavaNode = _lavaNode, Database = _database });
