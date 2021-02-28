@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using Infrastructure;
 using Microsoft.Extensions.Configuration;
 using PriseBot.Records;
@@ -106,20 +107,13 @@ namespace PriseBot.Worker
         {
             if (_lavaNode.HasPlayer(_context.Guild)) return;
 
-            //TODO: FIX BUG join to the channel with the most users
-            //OLD
-            //var voiceState = _context.User as IVoiceState;
-            //if (voiceState?.VoiceChannel == null) return;
-
-            //TEST THIS
-
-            var channel = _context.Guild.Channels.OrderBy(i => i.Users.Count).FirstOrDefault() as IVoiceChannel;
+            var channel = _context.Guild.VoiceChannels.OrderByDescending(i => i.Users.Count).FirstOrDefault();
 
             if (channel == null) return;
 
             try
             {
-                await _lavaNode.JoinAsync(channel, _context.Channel as ITextChannel);
+                await _lavaNode.JoinAsync(channel as IVoiceChannel, _context.Channel as ITextChannel);
             }
             catch (Exception exception)
             {
