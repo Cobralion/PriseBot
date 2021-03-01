@@ -3,6 +3,8 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Infrastructure;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using PriseBot.Helper;
 using PriseBot.Records;
 using System;
 using System.Collections.Generic;
@@ -26,6 +28,7 @@ namespace PriseBot.Worker
         private MinMaxTime _time;
         private LavaNode _lavaNode;
         private Database _database;
+        private ILogger _logger;
 
         public string Guild { get; private set; }
 
@@ -46,6 +49,7 @@ namespace PriseBot.Worker
             _time = workerInformation.Time;
             _lavaNode = workerInformation.LavaNode;
             _database = workerInformation.Database;
+            _logger = workerInformation.Logger;
             _thread = new Thread(Charge);
         }
 
@@ -76,84 +80,10 @@ namespace PriseBot.Worker
                     if (!_running) break;
                 }
 
-                var sprucheLength = _database.GetSpruecheLength().GetAwaiter().GetResult();
-                var (Header, Value) = _database.GetSpruchWithIndex(_random.Next(0, sprucheLength)).GetAwaiter().GetResult();
-
-                try
-                {
-                    ConnectAsync().GetAwaiter().GetResult();
-                    PlayAsync().GetAwaiter().GetResult();
-
-                    var embedBuilder = new EmbedBuilder()
-                        .WithThumbnailUrl("https://www.cigarworld.de/bilder/detail/small_500_265/2781_8717_41664.jpg")
-                        .WithDescription("Hier gibt's was zum priesen!")
-                        .WithColor(new Color(191, 89, 25))
-                        .AddField("Überschrift", Header, false)
-                        .AddField("Der Spruch", Value, false)
-                        .WithCurrentTimestamp();
-
-                    var embed = embedBuilder.Build();
-                    _context.Message.Channel.SendMessageAsync(null, false, embed).GetAwaiter().GetResult();
-
-                    LeaveAsync().GetAwaiter().GetResult();
-                }
-                catch {}
+                ChargeHelper.Charge(_context, _lavaNode, _database, _logger).GetAwaiter().GetResult();
 
                 Thread.Sleep(_random.Next(_time.Minimum, _time.Maximum));
             }
-        }
-
-        private async Task ConnectAsync()
-        {
-            if (_lavaNode.HasPlayer(_context.Guild)) return;
-
-            var channel = _context.Guild.VoiceChannels.OrderByDescending(i => i.Users.Count).FirstOrDefault();
-
-            if (channel == null) return;
-
-            try
-            {
-                await _lavaNode.JoinAsync(channel as IVoiceChannel, _context.Channel as ITextChannel);
-            }
-            catch (Exception exception)
-            {
-                // TODO: Logging
-            }
-        }
-
-        private async Task PlayAsync()
-        {
-
-            var videoLength = await _database.GetVideoLegth();
-            var video = await _database.GetVideoWithIndex(_random.Next(0, videoLength));
-
-    
-            var searchResponse = await _lavaNode.SearchAsync(video);
-            if (searchResponse.LoadStatus == LoadStatus.LoadFailed ||
-                searchResponse.LoadStatus == LoadStatus.NoMatches)
-                return;
-
-            var player = _lavaNode.GetPlayer(_context.Guild);
-
-            if (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
-                return;
-
-            var track = searchResponse.Tracks[0];
-            await player.PlayAsync(track);
-        }
-
-        private async Task LeaveAsync()
-        {
-            var player = _lavaNode.GetPlayer(_context.Guild);
-
-            if (player == null) return;
-
-            while (player.PlayerState == PlayerState.Playing || player.PlayerState == PlayerState.Paused)
-            {
-                await Task.Delay(1000);
-            }
-
-            await _lavaNode.LeaveAsync(player.VoiceChannel);
         }
 
         public void Dispose()

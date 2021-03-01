@@ -39,7 +39,7 @@ namespace PriseBot.Worker
 
                 var minMax = new MinMaxTime(Minimum, Maximum);
 
-                t.Configure(workerInformation with { Time = minMax, LavaNode = _lavaNode, Database = _database });
+                t.Configure(workerInformation with { Time = minMax, Database = _database, Logger = _logger });
             }
 
             if (_workers.ContainsKey(name))
