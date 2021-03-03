@@ -54,6 +54,25 @@ namespace Infrastructure
             await docRef.SetAsync(server);
         }
 
+        // UNTESTED
+        public async Task UpdateGuildSettings (string guild, GuildSettings guildSettings)
+        {
+            DocumentReference docRef = _firestoreDb.Collection("servers").Document(guild);
+            Dictionary<string, object> server = new Dictionary<string, object>
+            {
+                { "Channel", guildSettings.Channel },
+                { "Minimum", guildSettings.Minimum },
+                { "Maximum", guildSettings.Maximum },
+            };
+
+            foreach (var item in server)
+            {
+                if (string.IsNullOrEmpty(item.Value as string)) server.Remove(item.Key);
+            }
+
+            await docRef.UpdateAsync(server);
+        }
+
         public async Task<int> GetSpruecheLength()
         {
             CollectionReference internRef = _firestoreDb.Collection("intern");

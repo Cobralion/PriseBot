@@ -1,5 +1,6 @@
 ﻿using Discord.Commands;
 using Infrastructure;
+using Infrastructure.Enities;
 using Microsoft.Extensions.Logging;
 using PriseBot.Helper;
 using PriseBot.Worker;
@@ -47,6 +48,21 @@ namespace PriseBot.Modules
         {
             _logger.LogInformation($"Command aufladen was executed by {Context.User}");
             await ChargeHelper.ChargeWithTTS(Context, _lavaNode, _database, _logger);
+        }
+
+        [Command("timesettings")]
+        [Alias("time")]
+        public async Task ChangeBotTimeAsync (int minTime, int maxTime)
+        {
+            if(minTime > maxTime)
+            {
+                await Context.Channel.SendMessageAsync($"Min time can't be more than max time.");
+                return;
+            }
+
+            await _database.UpdateGuildSettings(Context.Guild.Id.ToString(), new GuildSettings(null, (minTime * 1000).ToString(), (maxTime * 1000).ToString()));
+            await Context.Channel.SendMessageAsync($"Worker time has be changed to: Min = {minTime}s, Max = {maxTime}s");
+            _logger.LogInformation($"Worker time for '{Context.Guild.Name}' has be changed to: Min = {minTime}s, Max = {maxTime}s");
         }
     }
 }
