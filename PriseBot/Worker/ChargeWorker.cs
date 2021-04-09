@@ -82,7 +82,11 @@ namespace PriseBot.Worker
 
                 ChargeHelper.Charge(_context, _lavaNode, _database, _logger).GetAwaiter().GetResult();
 
-                Thread.Sleep(_random.Next(_time.Minimum, _time.Maximum));
+                var sleepTime = _random.Next(_time.Minimum, _time.Maximum);
+
+                _logger.LogInformation($"Next Aufladen in {sleepTime / 1000}s.");
+
+                Thread.Sleep(sleepTime);
             }
         }
 

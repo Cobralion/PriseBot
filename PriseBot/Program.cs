@@ -65,6 +65,7 @@ namespace PriseBot
                     {
                         x.SelfDeaf = true;
                         x.LogSeverity = LogSeverity.Verbose;
+                        //x.Hostname = "lavalink-service.herokuapp.com";
                     });
                 })
                 .UseConsoleLifetime();
